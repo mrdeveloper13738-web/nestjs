@@ -1,0 +1,56 @@
+name: Build Zeal Docset from Markdown
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Node dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install Python tools
+        run: pip install markdown doc2dash
+
+      - name: Create download folder
+        run: mkdir download
+
+      - name: Convert Markdown → HTML
+        run: python tools/md_to_html.py
+
+      - name: Build Zeal Docset
+        run: |
+          doc2dash build_html -n MyDocs
+
+      - name: Move docset to download
+        run: |
+          mkdir download
+          move MyDocs.docset download/
+
+      - name: Install 7zip
+        run: choco install 7zip -y
+
+      - name: Compress (7z ultra + split 49MB)
+        run: |
+          7z a -t7z -mx=9 -v49m download/MyDocs.7z download/MyDocs.docset
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeal-docs
+          path: download/

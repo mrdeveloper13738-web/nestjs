@@ -23,5 +23,8 @@ for root, _, files in os.walk(input_dir):
 
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(html)
-
+with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
+    f.write("<h1>Docs</h1><ul>")
+    f.write("\n".join(links))
+    f.write("</ul>")
 print("Markdown conversion done")

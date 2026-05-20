@@ -67,4 +67,4 @@ index_html += """
 with open(os.path.join(OUTPUT, "index.html"), "w", encoding="utf-8") as f:
     f.write(index_html)
 
-print("✅ HTML files + index ساخته شد")
+print(" HTML files + index ساخته شد")

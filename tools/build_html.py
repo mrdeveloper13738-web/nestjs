@@ -2,7 +2,6 @@ import os
 import markdown
 import sys
 
-# جلوگیری از Unicode error در Windows CI
 sys.stdout.reconfigure(encoding='utf-8')
 
 INPUT_DIR = "content"
@@ -15,13 +14,12 @@ index_items = []
 for root, _, files in os.walk(INPUT_DIR):
     for file in files:
         if file.endswith(".md"):
-            md_path = os.path.join(root, file)
+            path = os.path.join(root, file)
 
-            with open(md_path, "r", encoding="utf-8") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 text = f.read()
 
             body = markdown.markdown(text)
-
             title = file.replace(".md", "")
 
             html = f"""<!DOCTYPE html>
@@ -45,12 +43,12 @@ for root, _, files in os.walk(INPUT_DIR):
 
             index_items.append((title, out_file))
 
-# ساخت index.html (ضروری برای doc2dash)
+# index.html
 index_html = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>Documentation Index</title>
+<title>Docs</title>
 </head>
 <body>
 <h1>Documentation</h1>
@@ -60,13 +58,9 @@ index_html = """<!DOCTYPE html>
 for title, link in index_items:
     index_html += f'<li><a href="{link}">{title}</a></li>\n'
 
-index_html += """
-</ul>
-</body>
-</html>
-"""
+index_html += "</ul></body></html>"
 
 with open(os.path.join(OUTPUT_DIR, "index.html"), "w", encoding="utf-8") as f:
     f.write(index_html)
 
-print("HTML files and index generated successfully")
+print("Build complete")

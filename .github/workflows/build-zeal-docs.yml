@@ -1,0 +1,74 @@
+name: Build Zeal Docset from Markdown
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install tools (doc2dash + pandoc)
+        run: |
+          choco install python -y
+          choco install pandoc -y
+          pip install doc2dash markdown
+
+      - name: Create folders
+        run: mkdir download
+
+      - name: Convert Markdown to HTML
+        run: |
+          python -c "
+import os
+import markdown
+
+input_dir = 'content'
+output_dir = 'build_html'
+
+os.makedirs(output_dir, exist_ok=True)
+
+for root, _, files in os.walk(input_dir):
+    for f in files:
+        if f.endswith('.md'):
+            path = os.path.join(root, f)
+            with open(path, 'r', encoding='utf-8') as file:
+                text = file.read()
+
+            html = markdown.markdown(text)
+
+            out_file = os.path.join(output_dir, f.replace('.md', '.html'))
+            with open(out_file, 'w', encoding='utf-8') as f_out:
+                f_out.write(html)
+"
+
+      - name: Build Zeal Docset
+        run: |
+          doc2dash build_html -n MyDocs -i icon.png || doc2dash build_html -n MyDocs
+
+      - name: Move docset to download folder
+        run: |
+          mkdir download
+          move MyDocs.docset download/
+
+      - name: Compress docset (7z ultra split 49MB)
+        run: |
+          choco install 7zip -y
+          7z a -t7z -mx=9 -v49m download/MyDocs.7z download/MyDocs.docset
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeal-docs
+          path: download/

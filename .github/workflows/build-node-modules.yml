@@ -25,12 +25,15 @@ jobs:
       - name: Install 7zip
         run: choco install 7zip -y
 
-      - name: Compress node_modules (7z ultra, split 49MB)
-        run: |
-          7z a -t7z -mx=9 -v49m node_modules.7z node_modules
+      - name: Create download folder
+        run: mkdir download
 
-      - name: Upload artifacts
+      - name: Compress node_modules into download folder (7z ultra split 49MB)
+        run: |
+          7z a -t7z -mx=9 -v49m download/node_modules.7z node_modules
+
+      - name: Upload artifact (download folder)
         uses: actions/upload-artifact@v4
         with:
-          name: node-modules-archive
-          path: node_modules.7z.*
+          name: download
+          path: download/

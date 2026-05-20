@@ -1,14 +1,18 @@
 import os
 import markdown
+import sys
 
-INPUT = "content"
-OUTPUT = "build_html"
+# جلوگیری از Unicode error در Windows CI
+sys.stdout.reconfigure(encoding='utf-8')
 
-os.makedirs(OUTPUT, exist_ok=True)
+INPUT_DIR = "content"
+OUTPUT_DIR = "build_html"
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 index_items = []
 
-for root, _, files in os.walk(INPUT):
+for root, _, files in os.walk(INPUT_DIR):
     for file in files:
         if file.endswith(".md"):
             md_path = os.path.join(root, file)
@@ -16,13 +20,11 @@ for root, _, files in os.walk(INPUT):
             with open(md_path, "r", encoding="utf-8") as f:
                 text = f.read()
 
-            # تبدیل به HTML
             body = markdown.markdown(text)
 
             title = file.replace(".md", "")
 
-            # ساخت HTML کامل (خیلی مهم برای doc2dash)
-            full_html = f"""<!DOCTYPE html>
+            html = f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -35,15 +37,15 @@ for root, _, files in os.walk(INPUT):
 </html>
 """
 
-            out_name = file.replace(".md", ".html")
-            out_path = os.path.join(OUTPUT, out_name)
+            out_file = file.replace(".md", ".html")
+            out_path = os.path.join(OUTPUT_DIR, out_file)
 
             with open(out_path, "w", encoding="utf-8") as f:
-                f.write(full_html)
+                f.write(html)
 
-            index_items.append((title, out_name))
+            index_items.append((title, out_file))
 
-# ساخت index.html (ضروری برای Zeal)
+# ساخت index.html (ضروری برای doc2dash)
 index_html = """<!DOCTYPE html>
 <html>
 <head>
@@ -64,7 +66,7 @@ index_html += """
 </html>
 """
 
-with open(os.path.join(OUTPUT, "index.html"), "w", encoding="utf-8") as f:
+with open(os.path.join(OUTPUT_DIR, "index.html"), "w", encoding="utf-8") as f:
     f.write(index_html)
 
-print(" HTML files + index ساخته شد")
+print("HTML files and index generated successfully")

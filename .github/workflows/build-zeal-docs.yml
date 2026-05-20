@@ -16,22 +16,24 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install tools
+      - name: Install dependencies
         run: |
-          pip install markdown beautifulsoup4
-          pip install doc2dash
+          pip install markdown beautifulsoup4 doc2dash
 
       - name: Create folders
         run: |
           mkdir build_html
           mkdir download
 
-      - name: Convert Markdown → HTML (with index-ready structure)
+      - name: Convert Markdown → HTML
         run: python tools/build_html.py
 
-      - name: Build Zeal Docset (with index)
+      - name: Debug (list files)
+        run: dir build_html
+
+      - name: Build Zeal Docset (FIXED)
         run: |
-          doc2dash build_html -n MyDocs --index-page index.html
+          doc2dash build_html --format=html -n MyDocs --index-page index.html
 
       - name: Move docset
         run: |
@@ -40,7 +42,7 @@ jobs:
       - name: Install 7zip
         run: choco install 7zip -y
 
-      - name: Compress (7z ultra + 49MB split)
+      - name: Compress (7z split)
         run: |
           7z a -t7z -mx=9 -v49m download/MyDocs.7z download/MyDocs.docset
 

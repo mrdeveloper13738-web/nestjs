@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Zeal Docset
         run: |
-          doc2dash build_html -n MyDocs
+          doc2dash build_html -n MyDocs -i build_html/index.html
 
       - name: Move docset to download
         run: |

@@ -1,0 +1,36 @@
+name: Build Node Modules Archive
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Fix npm version
+        run: npm install -g npm@9
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install 7zip
+        run: choco install 7zip -y
+
+      - name: Compress node_modules (7z ultra, split 49MB)
+        run: |
+          7z a -t7z -mx=9 -v49m node_modules.7z node_modules
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules-archive
+          path: node_modules.7z.*

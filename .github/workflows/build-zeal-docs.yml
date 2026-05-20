@@ -1,4 +1,4 @@
-name: Build Full Zeal Docset (Searchable)
+name: Build Zeal Docset (Fixed)
 
 on:
   workflow_dispatch:
@@ -26,23 +26,25 @@ jobs:
           mkdir download
 
       - name: Convert Markdown → HTML
-        run: python tools/build_html.py
+        run: |
+          set PYTHONIOENCODING=utf-8
+          python tools/build_html.py
 
-      - name: Debug (list files)
+      - name: Debug build_html
         run: dir build_html
 
       - name: Build Zeal Docset (FIXED)
         run: |
-          doc2dash build_html --format=html -n MyDocs --index-page index.html
+          doc2dash build_html -n MyDocs --index-page index.html
 
-      - name: Move docset
+      - name: Move docset to download
         run: |
           move MyDocs.docset download/
 
       - name: Install 7zip
         run: choco install 7zip -y
 
-      - name: Compress (7z split)
+      - name: Compress (7z ultra split 49MB)
         run: |
           7z a -t7z -mx=9 -v49m download/MyDocs.7z download/MyDocs.docset
 
